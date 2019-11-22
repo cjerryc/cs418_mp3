@@ -31,6 +31,7 @@ var mvMatrixStack = [];
 /** @global An object holding the geometry for a 3D mesh */
 var myMesh;
 
+//let button_result = 2;
 let scale_vec = vec3.create();
 let translate_vec = vec3.create();
 // View parameters
@@ -51,7 +52,7 @@ var lAmbient = [0,0,0];
 /** @global Diffuse light color/intensity for Phong reflection */
 var lDiffuse = [1,1,1];
 /** @global Specular light color/intensity for Phong reflection */
-var lSpecular =[0,0,0];
+var lSpecular =[1,1,1];
 
 //Material parameters
 /** @global Ambient material color/intensity for Phong reflection */
@@ -271,11 +272,11 @@ function setupShaders() {
 
 //----------------------------------------------------------------------------------
 /**
- * Setup the fragment and vertex shaders
+ * Setup the fragment and vertex shaders for reflection
  */
-function setupTextureShaders() {
-  vertexShader = loadShaderFromDOM("texture-shader-vs");
-  fragmentShader = loadShaderFromDOM("texture-shader-fs");
+function setupReflectShaders() {
+  vertexShader = loadShaderFromDOM("reflect-shader-vs");
+  fragmentShader = loadShaderFromDOM("reflect-shader-fs");
   
   shaderProgram = gl.createProgram();
   gl.attachShader(shaderProgram, vertexShader);
@@ -300,6 +301,39 @@ function setupTextureShaders() {
   shaderProgram.textureLocation = gl.getUniformLocation(shaderProgram, "u_texture");
   shaderProgram.worldCameraPositionLocation = gl.getUniformLocation(shaderProgram, "u_worldCameraPosition");
 }
+
+//----------------------------------------------------------------------------------
+/**
+ * Setup the fragment and vertex shaders for reflection
+ */
+function setupRefractShaders() {
+  vertexShader = loadShaderFromDOM("refract-shader-vs");
+  fragmentShader = loadShaderFromDOM("refract-shader-fs");
+  
+  shaderProgram = gl.createProgram();
+  gl.attachShader(shaderProgram, vertexShader);
+  gl.attachShader(shaderProgram, fragmentShader);
+  gl.linkProgram(shaderProgram);
+
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    alert("Failed to setup shaders");
+  }
+
+  gl.useProgram(shaderProgram);
+
+  shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+  gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+  shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+  gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+
+  shaderProgram.projectionLocation = gl.getUniformLocation(shaderProgram, "uPMatrix");
+  shaderProgram.viewLocation = gl.getUniformLocation(shaderProgram, "uvMatrix");
+  shaderProgram.worldLocation = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+  shaderProgram.textureLocation = gl.getUniformLocation(shaderProgram, "u_texture");
+  shaderProgram.worldCameraPositionLocation = gl.getUniformLocation(shaderProgram, "u_worldCameraPosition");
+}
+
 
 
 //-------------------------------------------------------------------------
@@ -386,11 +420,11 @@ function draw() {
         mat4.multiply(mvMatrix,vMatrix,mvMatrix);
         mat4.scale(mvMatrix, mvMatrix, scale_vec);
         mat4.translate(mvMatrix, mvMatrix, translate_vec);
-        //setMatrixUniforms();
-        // setLightUniforms(lightPosition,lAmbient,lDiffuse,lSpecular);
     
         if (document.getElementById("polygon").checked)
         {
+            setMatrixUniforms();
+            setLightUniforms(lightPosition,lAmbient,lDiffuse,lSpecular);
             setMaterialUniforms(shininess,kAmbient,
                                 kTerrainDiffuse,kSpecular); 
             
@@ -399,19 +433,23 @@ function draw() {
     
         if(document.getElementById("reflection").checked)
         {   
-            myMesh.drawTriangles();
+                  // Set the uniforms
+          gl.uniformMatrix4fv(shaderProgram.projectionLocation, false, pMatrix);
+          gl.uniformMatrix4fv(shaderProgram.viewLocation, false, vMatrix);
+          gl.uniformMatrix4fv(shaderProgram.worldLocation, false, mvMatrix);
+          gl.uniform3fv(shaderProgram.worldCameraPositionLocation, eyePt);
+          myMesh.drawTriangles();
         }   
 
-        // if(document.getElementById("refraction").checked)
-        // {
-        //     myMesh.drawEdges();
-        // }   
-
-        // Set the uniforms
-gl.uniformMatrix4fv(shaderProgram.projectionLocation, false, pMatrix);
-gl.uniformMatrix4fv(shaderProgram.viewLocation, false, vMatrix);
-gl.uniformMatrix4fv(shaderProgram.worldLocation, false, mvMatrix);
-gl.uniform3fv(shaderProgram.worldCameraPositionLocation, eyePt);
+        if(document.getElementById("refraction").checked)
+        {
+          // Set the uniforms
+          gl.uniformMatrix4fv(shaderProgram.projectionLocation, false, pMatrix);
+          gl.uniformMatrix4fv(shaderProgram.viewLocation, false, vMatrix);
+          gl.uniformMatrix4fv(shaderProgram.worldLocation, false, mvMatrix);
+          gl.uniform3fv(shaderProgram.worldCameraPositionLocation, eyePt);
+          myMesh.drawTriangles();
+        }   
  
 // Tell the shader to use texture unit 0 for u_texture
 gl.uniform1i(shaderProgram.textureLocation, 0);
@@ -459,8 +497,7 @@ function handleKeyUp(event) {
  function startup() {
   canvas = document.getElementById("myGLCanvas");
   gl = createGLContext(canvas);
-  setupShaders();////////////////////////////////////////////////////////////////////////////////////
-  //setupTextureShaders();
+  setupShaders();
   setupMesh("teapot_0.obj");
   setup_texture();
   //setupMesh("cow.obj");
@@ -480,6 +517,18 @@ function animate() {
    //console.log(eulerX, " ", eulerY, " ", eulerZ); 
    document.getElementById("eY").value=eulerY;
    document.getElementById("eZ").value=eyePt[2];   
+   if(document.getElementById("reflection").checked)
+   {   
+    setupReflectShaders();
+   }
+   if(document.getElementById("polygon").checked)
+   {   
+     setupShaders();
+   }  
+   if(document.getElementById("refraction").checked)
+   {   
+     setupRefractShaders();
+   }  
 }
 
 
