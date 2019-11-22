@@ -304,7 +304,7 @@ function setupReflectShaders() {
 
 //----------------------------------------------------------------------------------
 /**
- * Setup the fragment and vertex shaders for reflection
+ * Setup the fragment and vertex shaders for refraction
  */
 function setupRefractShaders() {
   vertexShader = loadShaderFromDOM("refract-shader-vs");
@@ -334,7 +334,31 @@ function setupRefractShaders() {
   shaderProgram.worldCameraPositionLocation = gl.getUniformLocation(shaderProgram, "u_worldCameraPosition");
 }
 
+// //----------------------------------------------------------------------------------
+// /**
+//  * Setup the fragment and vertex shaders for Skybox
+//  */
+// function setupSkyboxShaders() {
+//   vertexShader = loadShaderFromDOM("skybox-shader-vs");
+//   fragmentShader = loadShaderFromDOM("skybox-shader-fs");
+  
+//   shaderProgram = gl.createProgram();
+//   gl.attachShader(shaderProgram, vertexShader);
+//   gl.attachShader(shaderProgram, fragmentShader);
+//   gl.linkProgram(shaderProgram);
 
+//   if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+//     alert("Failed to setup shaders");
+//   }
+
+//   gl.useProgram(shaderProgram);
+
+//   shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+//   gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+//   shaderProgram.skyboxLocation = gl.getUniformLocation(shaderProgram, "u_skybox");
+//   shaderProgram.viewDirectionProjectionInverseLocation = gl.getUniformLocation(shaderProgram, "u_viewDirectionProjectionInverse");
+// }
 
 //-------------------------------------------------------------------------
 /**
@@ -414,9 +438,22 @@ function draw() {
     
     //Draw Mesh
     //ADD an if statement to prevent early drawing of myMesh
+//     let viewDirectionProjectionMatrix = mat4.create();
+//     mat4.multiply(viewDirectionProjectionMatrix, pMatrix, vMatrix);
+//     let viewDirectionProjectionInverseMatrix = mat4.create();
+//     mat4.invert(viewDirectionProjectionInverseMatrix, viewDirectionProjectionMatrix);
+ 
+// // Set the uniforms
+// gl.uniformMatrix4fv(shaderProgram.viewDirectionProjectionInverseLocation, false, viewDirectionProjectionInverseMatrix);
+ 
+// // Tell the shader to use texture unit 0 for u_skybox
+// gl.uniform1i(skyboxLocation, 0);
     if(myMesh.loaded()){    //change matrices values IF myMesh has new mesh data
         mvPushMatrix();
         mat4.rotateY(mvMatrix, mvMatrix, degToRad(eulerY));
+        //mat4.rotateY(vMatrix, vMatrix, degToRad(eulerY));
+        //vec3.rotateY(viewDir, viewDir, viewPt, degToRad(eulerY));
+        //vec3.rotateY(eyePt, eyePt, viewPt, degToRad(eulerY));
         mat4.multiply(mvMatrix,vMatrix,mvMatrix);
         mat4.scale(mvMatrix, mvMatrix, scale_vec);
         mat4.translate(mvMatrix, mvMatrix, translate_vec);
@@ -538,6 +575,7 @@ function animate() {
  */
 function tick() {
     requestAnimFrame(tick);
+    //setupSkyboxShaders();
     animate();
     draw();
 }

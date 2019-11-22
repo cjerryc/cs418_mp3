@@ -151,13 +151,37 @@ void main() {
         uniform vec3 u_worldCameraPosition;
          
         void main() {
-          vec3 worldNormal = normalize(v_worldNormal);
-          vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
-          vec3 direction = refract(eyeToSurfaceDir,worldNormal, 1.00/1.52);
-         
+          vec3 worldNormal = -normalize(v_worldNormal);
+          vec3 eyeToSurfaceDir = -normalize(v_worldPosition - u_worldCameraPosition);
+          vec3 direction = refract(eyeToSurfaceDir, worldNormal, 1.00/1.52);
+
           gl_FragColor = textureCube(u_texture, direction);
         }
     </script>
+
+
+    <script id="skybox-shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        varying vec4 v_position;
+        void main() {
+            v_position = vec4(aVertexPosition, 1.0);
+            gl_Position = vec4(aVertexPosition, 1.0);
+        }
+        </script>
+
+    <script id="skybox-shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+            
+        uniform samplerCube u_skybox;
+        uniform mat4 u_viewDirectionProjectionInverse;
+            
+        varying vec4 v_position;
+        void main() {
+        vec4 t = u_viewDirectionProjectionInverse * v_position;
+        gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+            }
+         </script>
+
 
 <script src="gl-matrix-min.js"></script> 
 <script src="webgl-utils.js"></script> 
@@ -169,7 +193,7 @@ void main() {
         <fieldset>
             <legend>Rendering Parameters</legend>
          <input type="radio" name="primitive" id="refraction" value="refraction"> Glass Refraction 
-         <input type="radio" name="primitive" id="polygon" id="polygon" value="polygon" checked> Polygon
+         <input type="radio" name="primitive" id="polygon" id="polygon" value="polygon" checked> Polygon Shading
          <input type="radio" name="primitive" id="reflection" value="reflection" > Reflective   
         </fieldset>
         <fieldset>
