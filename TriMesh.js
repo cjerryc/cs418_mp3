@@ -208,25 +208,25 @@ class TriMesh{
         gl.drawElements(gl.TRIANGLES, this.IndexTriBuffer.numItems, gl.UNSIGNED_INT,0);
     }
     
-    /**
-    * Render the triangle edges wireframe style 
-    */
-    drawEdges(){
+    // /**
+    // * Render the triangle edges wireframe style 
+    // */
+    // drawEdges(){
     
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.VertexPositionBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.VertexPositionBuffer.itemSize, 
-                         gl.FLOAT, false, 0, 0);
+    //     gl.bindBuffer(gl.ARRAY_BUFFER, this.VertexPositionBuffer);
+    //     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.VertexPositionBuffer.itemSize, 
+    //                      gl.FLOAT, false, 0, 0);
 
-        // Bind normal buffer
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.VertexNormalBuffer);
-        gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
-                           this.VertexNormalBuffer.itemSize,
-                           gl.FLOAT, false, 0, 0);   
+    //     // Bind normal buffer
+    //     gl.bindBuffer(gl.ARRAY_BUFFER, this.VertexNormalBuffer);
+    //     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, 
+    //                        this.VertexNormalBuffer.itemSize,
+    //                        gl.FLOAT, false, 0, 0);   
     
-        //Draw 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.IndexEdgeBuffer);
-        gl.drawElements(gl.LINES, this.IndexEdgeBuffer.numItems, gl.UNSIGNED_INT,0);   
-    }
+    //     //Draw 
+    //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.IndexEdgeBuffer);
+    //     gl.drawElements(gl.LINES, this.IndexEdgeBuffer.numItems, gl.UNSIGNED_INT,0);   
+    // }
 
 
 /**

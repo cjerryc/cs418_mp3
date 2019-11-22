@@ -75,6 +75,53 @@ void main(void) {
  }
 </script>
 
+
+<script id="texture-shader-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexNormal;
+attribute vec3 aVertexPosition;
+    
+uniform mat4 uPMatrix;
+uniform mat4 uvMatrix;
+uniform mat4 uMVMatrix;
+ 
+varying vec3 v_worldPosition;
+varying vec3 v_worldNormal;
+ 
+void main() {
+  // Multiply the position by the matrix.
+  //gl_Position = uPMatrix * uvMatrix * uMVMatrix * aVertexPosition;
+  gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+
+  // send the view position to the fragment shader
+  v_worldPosition = (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz;
+ 
+  // orient the normals and pass to the fragment shader
+  v_worldNormal = mat3(uMVMatrix) * aVertexNormal;
+}
+</script>
+  
+<script id="texture-shader-fs" type="x-shader/x-fragment">
+    precision highp float;
+ 
+    // Passed in from the vertex shader.
+    varying vec3 v_worldPosition;
+    varying vec3 v_worldNormal;
+     
+    // The texture.
+    uniform samplerCube u_texture;
+     
+    // The position of the camera
+    uniform vec3 u_worldCameraPosition;
+     
+    void main() {
+      vec3 worldNormal = normalize(v_worldNormal);
+      vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
+      vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+     
+      gl_FragColor = textureCube(u_texture, direction);
+    }
+</script>
+
 <script src="gl-matrix-min.js"></script> 
 <script src="webgl-utils.js"></script> 
 <script src="TriMesh.js"></script>  
@@ -84,9 +131,9 @@ void main(void) {
     <form id="input_form">
         <fieldset>
             <legend>Rendering Parameters</legend>
-         <input type="radio" name="primitive" id="wireframe" value="wireframe"> Wireframe
+         <input type="radio" name="primitive" id="refraction" value="refraction"> Glass Refraction 
          <input type="radio" name="primitive" id="polygon" id="polygon" value="polygon" checked> Polygon
-         <input type="radio" name="primitive" id="wirepoly" value="wirepoly" > Polygon with Edges  
+         <input type="radio" name="primitive" id="reflection" value="reflection" > Reflective   
         </fieldset>
         <fieldset>
             <legend>Mesh Pose and Camera Position</legend>

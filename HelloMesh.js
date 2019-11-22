@@ -268,6 +268,40 @@ function setupShaders() {
   shaderProgram.uniformSpecularMaterialColorLoc = gl.getUniformLocation(shaderProgram, "uKSpecular");
 }
 
+
+//----------------------------------------------------------------------------------
+/**
+ * Setup the fragment and vertex shaders
+ */
+function setupTextureShaders() {
+  vertexShader = loadShaderFromDOM("texture-shader-vs");
+  fragmentShader = loadShaderFromDOM("texture-shader-fs");
+  
+  shaderProgram = gl.createProgram();
+  gl.attachShader(shaderProgram, vertexShader);
+  gl.attachShader(shaderProgram, fragmentShader);
+  gl.linkProgram(shaderProgram);
+
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    alert("Failed to setup shaders");
+  }
+
+  gl.useProgram(shaderProgram);
+
+  shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+  gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+  shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
+  gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
+
+  shaderProgram.projectionLocation = gl.getUniformLocation(shaderProgram, "uPMatrix");
+  shaderProgram.viewLocation = gl.getUniformLocation(shaderProgram, "uvMatrix");
+  shaderProgram.worldLocation = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+  shaderProgram.textureLocation = gl.getUniformLocation(shaderProgram, "u_texture");
+  shaderProgram.worldCameraPositionLocation = gl.getUniformLocation(shaderProgram, "u_worldCameraPosition");
+}
+
+
 //-------------------------------------------------------------------------
 /**
  * Sends material information to the shader
@@ -352,29 +386,35 @@ function draw() {
         mat4.multiply(mvMatrix,vMatrix,mvMatrix);
         mat4.scale(mvMatrix, mvMatrix, scale_vec);
         mat4.translate(mvMatrix, mvMatrix, translate_vec);
-        setMatrixUniforms();
-        setLightUniforms(lightPosition,lAmbient,lDiffuse,lSpecular);
+        //setMatrixUniforms();
+        // setLightUniforms(lightPosition,lAmbient,lDiffuse,lSpecular);
     
-        if ((document.getElementById("polygon").checked) || (document.getElementById("wirepoly").checked))
+        if (document.getElementById("polygon").checked)
         {
             setMaterialUniforms(shininess,kAmbient,
                                 kTerrainDiffuse,kSpecular); 
+            
             myMesh.drawTriangles();
         }
     
-        if(document.getElementById("wirepoly").checked)
+        if(document.getElementById("reflection").checked)
         {   
-            setMaterialUniforms(shininess,kAmbient,
-                                kEdgeBlack,kSpecular);
-            myMesh.drawEdges();
+            myMesh.drawTriangles();
         }   
 
-        if(document.getElementById("wireframe").checked)
-        {
-            setMaterialUniforms(shininess,kAmbient,
-                                kEdgeWhite,kSpecular);
-            myMesh.drawEdges();
-        }   
+        // if(document.getElementById("refraction").checked)
+        // {
+        //     myMesh.drawEdges();
+        // }   
+
+        // Set the uniforms
+gl.uniformMatrix4fv(shaderProgram.projectionLocation, false, pMatrix);
+gl.uniformMatrix4fv(shaderProgram.viewLocation, false, vMatrix);
+gl.uniformMatrix4fv(shaderProgram.worldLocation, false, mvMatrix);
+gl.uniform3fv(shaderProgram.worldCameraPositionLocation, eyePt);
+ 
+// Tell the shader to use texture unit 0 for u_texture
+gl.uniform1i(shaderProgram.textureLocation, 0);
         mvPopMatrix();
     }
   
@@ -419,7 +459,8 @@ function handleKeyUp(event) {
  function startup() {
   canvas = document.getElementById("myGLCanvas");
   gl = createGLContext(canvas);
-  setupShaders();
+  setupShaders();////////////////////////////////////////////////////////////////////////////////////
+  //setupTextureShaders();
   setupMesh("teapot_0.obj");
   setup_texture();
   //setupMesh("cow.obj");
