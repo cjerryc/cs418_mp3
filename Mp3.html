@@ -1,0 +1,212 @@
+<!DOCTYPE HTML> 
+<html lang="en"> 
+<head>
+<title>Teapot </title>
+<meta charset="utf-8"> 
+</head>
+
+    
+<script id="shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexNormal;
+    attribute vec3 aVertexPosition;
+  
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+    uniform mat3 uNMatrix;
+  
+    varying vec3 vPosition;
+    varying vec3 vNormal;
+  
+    void main(void) {
+        // Get the vertex position in eye coordinates
+        vPosition = (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz;
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vNormal = uNMatrix * aVertexNormal;
+    }
+  </script>
+    
+  <script id="shader-fs" type="x-shader/x-fragment">
+  precision mediump float;
+  
+  uniform vec3 uLightPosition;
+  uniform vec3 uAmbientLightColor;
+  uniform vec3 uDiffuseLightColor;
+  uniform vec3 uSpecularLightColor;
+  
+  uniform vec3 uKAmbient;
+  uniform vec3 uKDiffuse;
+  uniform vec3 uKSpecular;
+  uniform float uShininess;
+  
+  varying vec3 vPosition;
+  varying vec3 vNormal;
+  
+  void main(void) {
+      // Calculate the vector (l) to the light source
+      vec3 vectorToLightSource = normalize(uLightPosition - vPosition);
+  
+      // Normalize interpolated normal
+      vec3 normalEye = normalize(vNormal);
+  
+      // Calculate n dot l for diffuse lighting
+      float diffuseLightWeightning = max(dot(normalEye, vectorToLightSource), 0.0);
+  
+      vec3 viewVectorEye = -normalize(vPosition);
+  
+      vec3 half_Vector = normalize(vectorToLightSource + viewVectorEye);
+  
+      float normal_part = max(dot(half_Vector, normalEye), 0.0);
+  
+      float specularLightWeightning = pow(normal_part, uShininess);
+  
+      
+      gl_FragColor = (vec4(((uAmbientLightColor * uKAmbient) + (uDiffuseLightColor * uKDiffuse) * diffuseLightWeightning + (uSpecularLightColor * uKSpecular) * specularLightWeightning), 1.0))*vec4(0.39, 0.7, 0.80, 1.0);
+  
+  }
+  </script>
+
+
+
+<script id="reflect-shader-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexNormal;
+attribute vec3 aVertexPosition;
+    
+uniform mat4 uPMatrix;
+uniform mat4 uvMatrix;
+uniform mat4 uMVMatrix;
+ 
+varying vec3 v_worldPosition;
+varying vec3 v_worldNormal;
+ 
+void main() {
+  // Multiply the position by the matrix.
+  //gl_Position = uPMatrix * uvMatrix * uMVMatrix * aVertexPosition;
+  gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+
+  // send the view position to the fragment shader
+  v_worldPosition = (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz;
+ 
+  // orient the normals and pass to the fragment shader
+  v_worldNormal = mat3(uMVMatrix) * aVertexNormal;
+}
+</script>
+  
+<script id="reflect-shader-fs" type="x-shader/x-fragment">
+    precision highp float;
+ 
+    // Passed in from the vertex shader.
+    varying vec3 v_worldPosition;
+    varying vec3 v_worldNormal;
+     
+    // The texture.
+    uniform samplerCube u_texture;
+     
+    // The position of the camera
+    uniform vec3 u_worldCameraPosition;
+     
+    void main() {
+      vec3 worldNormal = normalize(v_worldNormal);
+      vec3 eyeToSurfaceDir = normalize(v_worldPosition - u_worldCameraPosition);
+      vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+     
+      gl_FragColor = textureCube(u_texture, direction);
+    }
+</script>
+
+<script id="refract-shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexNormal;
+    attribute vec3 aVertexPosition;
+        
+    uniform mat4 uPMatrix;
+    uniform mat4 uvMatrix;
+    uniform mat4 uMVMatrix;
+     
+    varying vec3 v_worldPosition;
+    varying vec3 v_worldNormal;
+     
+    void main() {
+      // Multiply the position by the matrix.
+      //gl_Position = uPMatrix * uvMatrix * uMVMatrix * aVertexPosition;
+      gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+    
+      // send the view position to the fragment shader
+      v_worldPosition = (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz;
+     
+      // orient the normals and pass to the fragment shader
+      v_worldNormal = mat3(uMVMatrix) * aVertexNormal;
+    }
+    </script>
+      
+    <script id="refract-shader-fs" type="x-shader/x-fragment">
+        precision highp float;
+     
+        // Passed in from the vertex shader.
+        varying vec3 v_worldPosition;
+        varying vec3 v_worldNormal;
+         
+        // The texture.
+        uniform samplerCube u_texture;
+         
+        // The position of the camera
+        uniform vec3 u_worldCameraPosition;
+         
+        void main() {
+          vec3 worldNormal = -normalize(v_worldNormal);
+          vec3 eyeToSurfaceDir = -normalize(v_worldPosition - u_worldCameraPosition);
+          vec3 direction = refract(eyeToSurfaceDir, worldNormal, 1.00/1.52);
+
+          gl_FragColor = textureCube(u_texture, direction);
+        }
+    </script>
+
+
+    <script id="skybox-shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        varying vec4 v_position;
+        void main() {
+            v_position = vec4(aVertexPosition, 1.0);
+            gl_Position = vec4(aVertexPosition, 1.0);
+        }
+        </script>
+
+    <script id="skybox-shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+            
+        uniform samplerCube u_skybox;
+        uniform mat4 u_viewDirectionProjectionInverse;
+            
+        varying vec4 v_position;
+        void main() {
+        vec4 t = u_viewDirectionProjectionInverse * v_position;
+        gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+            }
+         </script>
+
+
+<script src="gl-matrix-min.js"></script> 
+<script src="webgl-utils.js"></script> 
+<script src="TriMesh.js"></script>  
+<script src="Mp3.js"></script>   
+<body onload="startup();">
+ <canvas id="myGLCanvas" width="800" height="800"></canvas>
+ <br>
+ Pressing  <b>Keys A and D</b> rotates the <b>Teapot</b>.<br>
+ Pressing the <b>Up and Down</b> keys  <b>zooms</b> in and out.<br>
+ Pressing <b>Keys W and R</b> rotates the camera view <b>around the teapot</b>.<br>
+ <br>
+    <form id="input_form">
+        <fieldset>
+            <legend>Rendering Parameters</legend>
+         <input type="radio" name="primitive" id="refraction" value="refraction" checked> Glass Refraction 
+         <input type="radio" name="primitive" id="polygon" id="polygon" value="polygon"> Polygon Shading
+         <input type="radio" name="primitive" id="reflection" value="reflection" > Reflective   
+        </fieldset>
+        <fieldset>
+            <legend>Mesh Pose and Camera Position</legend>
+         <emph>Euler Y:</emph> <input type="number" id="eY" value="0"> Keys A and D<br><br>
+         <emph>Eye Z position:</emph> <input type="number" id="eZ" value="0" > Keys ArrowUp and ArrowDown
+        </fieldset>
+        </form>
+</body>
+
+</html>
