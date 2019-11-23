@@ -431,10 +431,13 @@ function draw() {
                      0.1, 500.0);
 
     // We want to look down -z, so create a lookat point in that direction    
-    vec3.add(viewPt, eyePt, viewDir);
+    //vec3.add(viewPt, eyePt, viewDir);
     
     // Then generate the lookat matrix and initialize the view matrix to that view
     mat4.lookAt(vMatrix,eyePt,viewPt,up);
+    //let rotate_around = vec3.create();
+    // eyePt = vec3.fromValues(Math.cos(eulerY), 0, Math.sin(eulerY));
+    //eyePt = vec3.add(eyePt, eyePt, rotate_around);
     
     //Draw Mesh
     //ADD an if statement to prevent early drawing of myMesh
@@ -520,6 +523,18 @@ function handleKeyDown(event) {
             eyePt[2]-= 0.01;
         } 
     
+        if (currentlyPressedKeys["w"]) {
+          // key A
+          eulerY-= 0.05;
+          eyePt[2] = 2*Math.cos(eulerY);
+          eyePt[0] = 2*Math.sin(eulerY);
+      } else if (currentlyPressedKeys["r"]) {
+          // key D
+          eulerY+= 0.05;
+          eyePt[2] = 2*Math.cos(eulerY);
+          eyePt[0] = 2*Math.sin(eulerY);
+      } 
+
 }
 
 function handleKeyUp(event) {
