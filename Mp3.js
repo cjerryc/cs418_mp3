@@ -517,15 +517,15 @@ function handleKeyDown(event) {
             eulerY+= 1;
         } 
     
-        if (currentlyPressedKeys["ArrowUp"]){               //zoom in and out
-            // Up cursor key
-            event.preventDefault();
-            eyePt[2]+= 0.01;
-        } else if (currentlyPressedKeys["ArrowDown"]){
-            event.preventDefault();
-            // Down cursor key
-            eyePt[2]-= 0.01;
-        } 
+        // if (currentlyPressedKeys["ArrowUp"]){               //zoom in and out
+        //     // Up cursor key
+        //     event.preventDefault();
+        //     eyePt[2]+= 0.01;
+        // } else if (currentlyPressedKeys["ArrowDown"]){
+        //     event.preventDefault();
+        //     // Down cursor key
+        //     eyePt[2]-= 0.01;
+        // } 
     
         if (currentlyPressedKeys["w"]) {            //rotate AROUND the teapot
           // key A
@@ -577,7 +577,7 @@ function handleKeyUp(event) {
 function animate() {
    //console.log(eulerX, " ", eulerY, " ", eulerZ); 
    document.getElementById("eY").value=eulerY;
-   document.getElementById("eZ").value=eyePt[2];   
+   //document.getElementById("eZ").value=eyePt[2];   
    if(document.getElementById("reflection").checked)
    {   
     setupReflectShaders();

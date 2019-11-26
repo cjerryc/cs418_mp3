@@ -190,21 +190,19 @@ void main() {
 <body onload="startup();">
  <canvas id="myGLCanvas" width="800" height="800"></canvas>
  <br>
- Pressing  <b>Keys A and D</b> rotates the <b>Teapot</b>.<br>
- Pressing the <b>Up and Down</b> keys  <b>zooms</b> in and out.<br>
- Pressing <b>Keys W and R</b> rotates the camera view <b>around the teapot</b>.<br>
+ Pressing  <b>Keys A and D</b> rotate the <b>Teapot</b>.<br>
+ Pressing <b>Keys W and R</b> rotate the camera view <b>around the teapot</b>.<br>
  <br>
     <form id="input_form">
         <fieldset>
             <legend>Rendering Parameters</legend>
          <input type="radio" name="primitive" id="refraction" value="refraction" checked> Glass Refraction 
-         <input type="radio" name="primitive" id="polygon" id="polygon" value="polygon"> Polygon Shading
+         <input type="radio" name="primitive" id="polygon" id="polygon" value="polygon" checked> Polygon Shading
          <input type="radio" name="primitive" id="reflection" value="reflection" > Reflective   
         </fieldset>
         <fieldset>
             <legend>Mesh Pose and Camera Position</legend>
          <emph>Euler Y:</emph> <input type="number" id="eY" value="0"> Keys A and D<br><br>
-         <emph>Eye Z position:</emph> <input type="number" id="eZ" value="0" > Keys ArrowUp and ArrowDown
         </fieldset>
         </form>
 </body>
